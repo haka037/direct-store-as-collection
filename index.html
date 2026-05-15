@@ -553,12 +553,7 @@
                 <div class="card-title">신청 정보</div>
               </div>
               <div class="form-stack">
-                <div>
-                  <label for="accessCode">접속코드</label>
-                  <input id="accessCode" type="password" autocomplete="current-password" placeholder="본사에서 안내한 접속코드" />
-                </div>
-                <button class="btn primary" id="connectBtn" type="button">접속</button>
-                <div class="muted status-line" id="connectionStatus">접속 후 매장과 제품 목록을 불러옵니다.</div>
+                <div class="muted status-line" id="connectionStatus">매장과 제품 목록을 불러오는 중입니다.</div>
                 <div>
                   <label for="storeSelect">매장</label>
                   <select id="storeSelect">
@@ -657,7 +652,6 @@
 
       const $ = (id) => document.getElementById(id);
       const today = () => new Date().toISOString().slice(0, 10);
-      $("accessCode").value = localStorage.getItem("asCollectionAccessCode") || "";
       $("confirmDate").value = today();
 
       function toast(message) {
@@ -671,22 +665,16 @@
         return (new URLSearchParams(location.search).get("api") || DEFAULT_API_BASE).replace(/\/$/, "");
       }
 
-      function accessCode() {
-        return $("accessCode").value.trim();
-      }
-
       function setConnectionStatus(message, tone = "") {
         $("connectionStatus").textContent = message;
         $("connectionStatus").dataset.tone = tone;
       }
 
       async function api(path, options = {}) {
-        if (!accessCode()) throw new Error("접속코드를 입력해 주세요.");
         const res = await fetch(`${apiBase()}${path}`, {
           ...options,
           headers: {
             "Content-Type": "application/json",
-            "X-Direct-Store-AS-Collection-Passcode": accessCode(),
             ...(options.headers || {})
           }
         });
@@ -700,7 +688,7 @@
       function setLoading(value) {
         state.loading = value;
         document.querySelectorAll("button, input, select, textarea").forEach((el) => {
-          if (el.id !== "accessCode") el.disabled = value;
+          el.disabled = value;
         });
       }
 
@@ -814,7 +802,6 @@
         setLoading(true);
         setConnectionStatus("매장과 제품 목록을 불러오는 중입니다.");
         try {
-          localStorage.setItem("asCollectionAccessCode", accessCode());
           const [stores, products] = await Promise.all([
             api("/api/direct-store-as-collection/stores"),
             api("/api/direct-store-as-collection/products?limit=1000")
@@ -826,10 +813,9 @@
           addRow();
           await refreshHistory();
           setConnectionStatus(`${state.stores.length}개 매장, ${state.products.length}개 제품을 불러왔습니다.`, "ok");
-          toast("접속 완료");
         } catch (error) {
-          setConnectionStatus(error.message || "접속에 실패했습니다.", "warn");
-          toast(error.message || "접속에 실패했습니다.");
+          setConnectionStatus(error.message || "데이터를 불러오지 못했습니다.", "warn");
+          toast(error.message || "데이터를 불러오지 못했습니다.");
         } finally {
           setLoading(false);
         }
@@ -851,7 +837,7 @@
 
       async function submit() {
         if (!state.stores.length || !state.products.length) {
-          toast("먼저 접속해 주세요.");
+          toast("매장과 제품 목록을 불러오는 중입니다.");
           return;
         }
         const storeCode = $("storeSelect").value;
@@ -906,11 +892,7 @@
         });
       });
 
-      $("connectBtn").addEventListener("click", refresh);
       $("reloadBtn").addEventListener("click", refresh);
-      $("accessCode").addEventListener("keydown", (event) => {
-        if (event.key === "Enter") refresh().catch((error) => toast(error.message));
-      });
       $("addRowBtn").addEventListener("click", () => addRow());
       $("submitBtn").addEventListener("click", submit);
       $("storeSelect").addEventListener("change", () => {
@@ -918,9 +900,7 @@
         refreshHistory().catch((error) => toast(error.message));
       });
       addRow();
-      if (accessCode()) {
-        refresh().catch((error) => toast(error.message));
-      }
+      refresh().catch((error) => toast(error.message));
     </script>
   </body>
 </html>

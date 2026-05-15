@@ -166,6 +166,15 @@
         font-weight: 800;
         white-space: nowrap;
       }
+      .status-line {
+        margin-top: -4px;
+      }
+      .status-line[data-tone="ok"] {
+        color: var(--ok);
+      }
+      .status-line[data-tone="warn"] {
+        color: var(--warn);
+      }
       .wrap {
         padding: 22px;
       }
@@ -212,6 +221,10 @@
       .grid {
         display: grid;
         gap: 12px;
+      }
+      .grid > *,
+      .team-layout > * {
+        min-width: 0;
       }
       .top-grid {
         grid-template-columns: 1.4fr 1fr 1fr;
@@ -348,6 +361,7 @@
       }
       .table-wrap {
         overflow-x: auto;
+        max-width: 100%;
       }
       .badge {
         display: inline-flex;
@@ -498,7 +512,7 @@
         <button class="btn nav-item active" type="button" data-nav-tab="form">수거 신청</button>
         <button class="btn nav-item" type="button" data-nav-tab="history">신청 이력</button>
         <div class="sidebar-bottom">
-          <button class="btn nav-item" id="reloadBtn" type="button">ERP 새로고침</button>
+          <button class="btn nav-item" id="reloadBtn" type="button">새로고침</button>
         </div>
       </aside>
 
@@ -509,7 +523,7 @@
             <div class="topbar-sub">직영점 팀장 입력 전용</div>
           </div>
           <div class="topbar-right">
-            <span class="ledger-badge">ERP 원장 연결</span>
+            <span class="ledger-badge">본사 원장 연동</span>
           </div>
         </div>
 
@@ -517,9 +531,8 @@
           <header class="page-head">
             <div>
               <h1>직영점 AS 수거 신청</h1>
-              <div class="sub">데이터는 ERP DB 원장에 저장됩니다.</div>
+              <div class="sub">매장 AS 수거 품목을 등록하고 처리 이력을 확인합니다.</div>
             </div>
-            <button class="btn" id="connectBtn">연결</button>
           </header>
 
           <section class="summary">
@@ -541,13 +554,11 @@
               </div>
               <div class="form-stack">
                 <div>
-                  <label for="apiBase">ERP API 주소</label>
-                  <input id="apiBase" />
+                  <label for="accessCode">접속코드</label>
+                  <input id="accessCode" type="password" autocomplete="current-password" placeholder="본사에서 안내한 접속코드" />
                 </div>
-                <div>
-                  <label for="accessCode">팀장용 접속코드</label>
-                  <input id="accessCode" type="password" autocomplete="current-password" />
-                </div>
+                <button class="btn primary" id="connectBtn" type="button">접속</button>
+                <div class="muted status-line" id="connectionStatus">접속 후 매장과 제품 목록을 불러옵니다.</div>
                 <div>
                   <label for="storeSelect">매장</label>
                   <select id="storeSelect">
@@ -646,8 +657,6 @@
 
       const $ = (id) => document.getElementById(id);
       const today = () => new Date().toISOString().slice(0, 10);
-      const savedApiBase = localStorage.getItem("asCollectionApiBase") || DEFAULT_API_BASE;
-      $("apiBase").value = new URLSearchParams(location.search).get("api") || savedApiBase;
       $("accessCode").value = localStorage.getItem("asCollectionAccessCode") || "";
       $("confirmDate").value = today();
 
@@ -659,16 +668,20 @@
       }
 
       function apiBase() {
-        return $("apiBase").value.trim().replace(/\/$/, "");
+        return (new URLSearchParams(location.search).get("api") || DEFAULT_API_BASE).replace(/\/$/, "");
       }
 
       function accessCode() {
         return $("accessCode").value.trim();
       }
 
+      function setConnectionStatus(message, tone = "") {
+        $("connectionStatus").textContent = message;
+        $("connectionStatus").dataset.tone = tone;
+      }
+
       async function api(path, options = {}) {
-        if (!apiBase()) throw new Error("ERP API 주소를 입력해 주세요.");
-        if (!accessCode()) throw new Error("팀장용 접속코드를 입력해 주세요.");
+        if (!accessCode()) throw new Error("접속코드를 입력해 주세요.");
         const res = await fetch(`${apiBase()}${path}`, {
           ...options,
           headers: {
@@ -687,7 +700,7 @@
       function setLoading(value) {
         state.loading = value;
         document.querySelectorAll("button, input, select, textarea").forEach((el) => {
-          if (el.id !== "accessCode" && el.id !== "apiBase") el.disabled = value;
+          if (el.id !== "accessCode") el.disabled = value;
         });
       }
 
@@ -799,8 +812,8 @@
 
       async function refresh() {
         setLoading(true);
+        setConnectionStatus("매장과 제품 목록을 불러오는 중입니다.");
         try {
-          localStorage.setItem("asCollectionApiBase", apiBase());
           localStorage.setItem("asCollectionAccessCode", accessCode());
           const [stores, products] = await Promise.all([
             api("/api/direct-store-as-collection/stores"),
@@ -812,9 +825,11 @@
           $("itemBody").innerHTML = "";
           addRow();
           await refreshHistory();
-          toast("ERP API 연결 완료");
+          setConnectionStatus(`${state.stores.length}개 매장, ${state.products.length}개 제품을 불러왔습니다.`, "ok");
+          toast("접속 완료");
         } catch (error) {
-          toast(error.message || "연결에 실패했습니다.");
+          setConnectionStatus(error.message || "접속에 실패했습니다.", "warn");
+          toast(error.message || "접속에 실패했습니다.");
         } finally {
           setLoading(false);
         }
@@ -835,6 +850,10 @@
       }
 
       async function submit() {
+        if (!state.stores.length || !state.products.length) {
+          toast("먼저 접속해 주세요.");
+          return;
+        }
         const storeCode = $("storeSelect").value;
         if (!storeCode) {
           toast("매장을 선택해 주세요.");
@@ -889,6 +908,9 @@
 
       $("connectBtn").addEventListener("click", refresh);
       $("reloadBtn").addEventListener("click", refresh);
+      $("accessCode").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") refresh().catch((error) => toast(error.message));
+      });
       $("addRowBtn").addEventListener("click", () => addRow());
       $("submitBtn").addEventListener("click", submit);
       $("storeSelect").addEventListener("change", () => {
@@ -896,6 +918,9 @@
         refreshHistory().catch((error) => toast(error.message));
       });
       addRow();
+      if (accessCode()) {
+        refresh().catch((error) => toast(error.message));
+      }
     </script>
   </body>
 </html>

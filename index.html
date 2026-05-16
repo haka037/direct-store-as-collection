@@ -818,12 +818,16 @@
                 <button class="btn" id="applyCommonBtn" type="button">선택 행 적용</button>
                 <span id="commonHint">미선택 시 전체 행에 적용됩니다.</span>
               </div>
+              <div class="muted" style="margin:-4px 0 10px">
+                Tab은 다음 칸, Enter는 같은 칸의 다음 행으로 이동합니다. 엑셀 복사값은 제품명 | 구분 | 유/무상 | 수량 | 메모 순서로 붙여넣을 수 있습니다.
+              </div>
 
               <div class="table-wrap">
                 <table>
                   <thead>
                     <tr>
                       <th style="width:40px"><input class="row-check" id="rowCheckAll" type="checkbox" /></th>
+                      <th style="width:48px">#</th>
                       <th style="min-width:260px">제품</th>
                       <th style="min-width:150px">구분</th>
                       <th style="min-width:130px">유/무상</th>
@@ -1225,28 +1229,112 @@
         toast(`${rows.length}개 행에 적용했습니다.`);
       }
 
+      function updateRowNumbers() {
+        Array.from($("itemBody").querySelectorAll("tr")).forEach((tr, index) => {
+          tr.querySelector(".row-no").textContent = index + 1;
+        });
+        updateCommonHint();
+      }
+
+      function rowData(tr) {
+        return {
+          productSkuCode: tr.querySelector(".product-code").value,
+          productName: tr.querySelector(".product-input").value.trim(),
+          division: tr.querySelector(".division").value,
+          charge: tr.querySelector(".charge").value,
+          qty: tr.querySelector(".qty").value || "1",
+          memo: tr.querySelector(".memo").value.trim()
+        };
+      }
+
+      function duplicateRow(tr) {
+        const cloned = addRow(rowData(tr));
+        window.setTimeout(() => cloned.querySelector(".product-input").focus(), 30);
+      }
+
+      function clearRow(tr) {
+        tr.querySelector(".row-check.item").checked = false;
+        tr.querySelector(".product-input").value = "";
+        tr.querySelector(".product-code").value = "";
+        tr.querySelector(".division").value = $("commonDiv").value || divisions[0];
+        tr.querySelector(".charge").value = $("commonCharge").value || charges[0];
+        tr.querySelector(".qty").value = "1";
+        tr.querySelector(".memo").value = "";
+      }
+
+      function removeRow(tr) {
+        if ($("itemBody").children.length > 1) tr.remove();
+        else clearRow(tr);
+        updateRowNumbers();
+      }
+
+      function resolveExactProductForRow(tr) {
+        if (tr.querySelector(".product-code").value) return;
+        const exact = findExactProductByInput(tr.querySelector(".product-input").value);
+        if (exact) selectProductForRow(tr, exact.skuCode);
+      }
+
+      function focusItemCell(tr, cellName) {
+        const target = tr?.querySelector(`[data-cell="${cellName}"]`);
+        if (!target) return false;
+        target.focus();
+        if (target.select) target.select();
+        return true;
+      }
+
+      function handleItemCellKey(event, tr) {
+        if (event.key !== "Tab" && event.key !== "Enter") return;
+        event.preventDefault();
+        resolveExactProductForRow(tr);
+        const order = ["product", "division", "charge", "qty", "memo"];
+        const current = event.target.dataset.cell;
+        const index = Math.max(0, order.indexOf(current));
+        const rows = Array.from($("itemBody").querySelectorAll("tr"));
+        const rowIndex = rows.indexOf(tr);
+
+        if (event.key === "Enter") {
+          const nextRow = rows[rowIndex + 1] || addRow();
+          focusItemCell(nextRow, current);
+          return;
+        }
+
+        const nextIndex = event.shiftKey ? index - 1 : index + 1;
+        if (nextIndex >= 0 && nextIndex < order.length) {
+          focusItemCell(tr, order[nextIndex]);
+          return;
+        }
+        const targetRow = event.shiftKey ? rows[rowIndex - 1] : (rows[rowIndex + 1] || addRow());
+        focusItemCell(targetRow, event.shiftKey ? order[order.length - 1] : order[0]);
+      }
+
       function addRow(row = {}) {
         const product = row.productSkuCode ? state.products.find((item) => item.skuCode === row.productSkuCode) : null;
         const tr = document.createElement("tr");
         tr.dataset.rowId = String(++rowSeq);
         tr.innerHTML = `
           <td><input class="row-check item" type="checkbox" /></td>
+          <td class="row-no"></td>
           <td>
             <div class="product-cell acw">
-              <input class="product-input" placeholder="제품명·품번·바코드 검색" autocomplete="off" value="${escapeHtml(row.productName || productDisplay(product) || row.productSearch || "")}" />
+              <input class="product-input item-cell" data-cell="product" placeholder="제품명·품번·바코드 검색" autocomplete="off" value="${escapeHtml(row.productName || productDisplay(product) || row.productSearch || "")}" />
               <input class="product-code" type="hidden" value="${escapeHtml(row.productSkuCode || "")}" />
               <div class="acl product-ac hidden"></div>
             </div>
           </td>
-          <td><select class="division">${selectOptions(divisions, row.division || $("commonDiv").value || divisions[0])}</select></td>
-          <td><select class="charge">${selectOptions(charges, row.charge || $("commonCharge").value || charges[0])}</select></td>
-          <td><input class="qty" type="number" min="1" value="${escapeHtml(row.qty || "1")}" /></td>
-          <td><input class="memo" value="${escapeHtml(row.memo || "")}" /></td>
-          <td><button class="btn remove" type="button">삭제</button></td>
+          <td><select class="division item-cell" data-cell="division">${selectOptions(divisions, row.division || $("commonDiv").value || divisions[0])}</select></td>
+          <td><select class="charge item-cell" data-cell="charge">${selectOptions(charges, row.charge || $("commonCharge").value || charges[0])}</select></td>
+          <td><input class="qty item-cell" data-cell="qty" type="number" min="1" value="${escapeHtml(row.qty || "1")}" /></td>
+          <td><input class="memo item-cell" data-cell="memo" value="${escapeHtml(row.memo || "")}" /></td>
+          <td>
+            <div style="display:flex;gap:6px;justify-content:flex-end">
+              <button class="btn duplicate" type="button">복제</button>
+              <button class="btn remove" type="button">삭제</button>
+            </div>
+          </td>
         `;
+        tr.querySelector(".duplicate").addEventListener("click", () => duplicateRow(tr));
         tr.querySelector(".remove").addEventListener("click", () => {
-          if ($("itemBody").children.length > 1) tr.remove();
-          updateCommonHint();
+          removeRow(tr);
         });
         tr.querySelector(".row-check.item").addEventListener("change", updateCommonHint);
         tr.querySelector(".product-input").addEventListener("input", () => {
@@ -1261,8 +1349,11 @@
           }
           window.setTimeout(() => tr.querySelector(".product-ac").classList.add("hidden"), 140);
         });
+        tr.querySelectorAll(".item-cell").forEach((field) => {
+          field.addEventListener("keydown", (event) => handleItemCellKey(event, tr));
+        });
         $("itemBody").appendChild(tr);
-        updateCommonHint();
+        updateRowNumbers();
         return tr;
       }
 
@@ -1443,6 +1534,7 @@
           const tr = rows[startIndex + offset] || addRow();
           fillRowFromPaste(tr, line.split("\t"));
         });
+        updateRowNumbers();
         toast(`${lines.length}개 행을 붙여넣었습니다.`);
       }
 
@@ -1532,6 +1624,7 @@
           toast("목록에서 매장을 선택해 주세요.");
           return;
         }
+        Array.from($("itemBody").querySelectorAll("tr")).forEach(resolveExactProductForRow);
         const items = rowsPayload();
         if (!items.length || items.some((item) => !item.productSkuCode || item.qty < 1)) {
           toast("제품과 수량을 확인해 주세요.");

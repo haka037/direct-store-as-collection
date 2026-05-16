@@ -441,6 +441,14 @@
         display: grid;
         gap: 12px;
       }
+      .field-stack,
+      .product-cell {
+        display: grid;
+        gap: 6px;
+      }
+      .product-cell input {
+        min-width: 250px;
+      }
       @media (max-width: 820px) {
         .shell {
           display: block;
@@ -556,9 +564,12 @@
                 <div class="muted status-line" id="connectionStatus">매장과 제품 목록을 불러오는 중입니다.</div>
                 <div>
                   <label for="storeSelect">매장</label>
-                  <select id="storeSelect">
-                    <option value="">매장 선택</option>
-                  </select>
+                  <div class="field-stack">
+                    <input id="storeSearch" placeholder="매장명·지역·코드 검색" autocomplete="off" />
+                    <select id="storeSelect">
+                      <option value="">매장 선택</option>
+                    </select>
+                  </div>
                   <div class="muted" id="storeMeta"></div>
                 </div>
                 <div class="grid top-grid">
@@ -706,9 +717,52 @@
         })[char]);
       }
 
+      function normalizeSearch(value) {
+        return String(value ?? "").toLowerCase().replace(/\s+/g, "");
+      }
+
+      function containsSearch(haystack, search) {
+        if (!search) return true;
+        return normalizeSearch(haystack).includes(search);
+      }
+
+      function storeSearchText(store) {
+        return [
+          store.storeCode,
+          store.storeName,
+          store.amsStoreCode,
+          store.region,
+          store.deliveryRoute,
+          store.deliveryDayOfWeek,
+          store.address,
+          store.phone
+        ].join(" ");
+      }
+
+      function productSearchText(product) {
+        return [
+          product.skuCode,
+          product.name,
+          product.englishName,
+          product.barcode,
+          product.categoryCode,
+          product.category?.name
+        ].join(" ");
+      }
+
+      function filteredStores(selected = "") {
+        const search = normalizeSearch($("storeSearch").value);
+        const rows = state.stores.filter((store) => containsSearch(storeSearchText(store), search));
+        const selectedStore = selected ? state.stores.find((store) => store.storeCode === selected) : null;
+        if (selectedStore && !rows.some((store) => store.storeCode === selectedStore.storeCode)) {
+          return [selectedStore, ...rows];
+        }
+        return rows;
+      }
+
       function renderStores() {
         const selected = $("storeSelect").value;
-        $("storeSelect").innerHTML = `<option value="">매장 선택</option>` + state.stores
+        $("storeSelect").innerHTML = `<option value="">매장 선택</option>` + filteredStores(selected)
           .map((store) => optionHtml(store.storeCode, `${store.storeName} · ${store.region || "미분류"} · ${store.storeCode}`, selected))
           .join("");
         renderStoreMeta();
@@ -716,13 +770,29 @@
 
       function renderStoreMeta() {
         const store = state.stores.find((item) => item.storeCode === $("storeSelect").value);
-        $("storeMeta").textContent = store
-          ? `${store.region || "미분류"} / ${store.deliveryRoute || store.deliveryDayOfWeek || "-"} / ${store.amsStoreCode || store.storeCode}`
-          : "";
+        if (store) {
+          $("storeMeta").textContent = `${store.region || "미분류"} / ${store.deliveryRoute || store.deliveryDayOfWeek || "-"} / ${store.amsStoreCode || store.storeCode}`;
+          return;
+        }
+
+        const search = $("storeSearch").value.trim();
+        $("storeMeta").textContent = search ? `검색 결과 ${filteredStores().length}개` : "";
       }
 
-      function productOptions(selected = "") {
-        return `<option value="">제품 선택</option>` + state.products
+      function filteredProducts(searchText = "", selected = "") {
+        const search = normalizeSearch(searchText);
+        const rows = state.products.filter((product) => containsSearch(productSearchText(product), search));
+        const selectedProduct = selected ? state.products.find((product) => product.skuCode === selected) : null;
+        if (selectedProduct && !rows.some((product) => product.skuCode === selectedProduct.skuCode)) {
+          return [selectedProduct, ...rows];
+        }
+        return rows;
+      }
+
+      function productOptions(selected = "", searchText = "") {
+        const products = filteredProducts(searchText, selected);
+        const suffix = searchText.trim() && products.length === 0 ? "검색 결과 없음" : "제품 선택";
+        return `<option value="">${suffix}</option>` + products
           .map((product) => optionHtml(product.skuCode, `${product.name} · ${product.skuCode}`, selected))
           .join("");
       }
@@ -734,7 +804,12 @@
       function addRow(row = {}) {
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td><select class="product">${productOptions(row.productSkuCode || "")}</select></td>
+          <td>
+            <div class="product-cell">
+              <input class="product-search" placeholder="제품명·품번·바코드 검색" autocomplete="off" value="${escapeHtml(row.productSearch || "")}" />
+              <select class="product">${productOptions(row.productSkuCode || "", row.productSearch || "")}</select>
+            </div>
+          </td>
           <td><select class="division">${selectOptions(divisions, row.division || divisions[0])}</select></td>
           <td><select class="charge">${selectOptions(charges, row.charge || charges[0])}</select></td>
           <td><input class="qty" type="number" min="1" value="${escapeHtml(row.qty || "1")}" /></td>
@@ -743,6 +818,12 @@
         `;
         tr.querySelector(".remove").addEventListener("click", () => {
           if ($("itemBody").children.length > 1) tr.remove();
+        });
+        tr.querySelector(".product-search").addEventListener("input", (event) => {
+          const select = tr.querySelector(".product");
+          const selected = select.value;
+          select.innerHTML = productOptions(selected, event.target.value);
+          if (!Array.from(select.options).some((option) => option.value === selected)) select.value = "";
         });
         $("itemBody").appendChild(tr);
       }
@@ -895,6 +976,9 @@
       $("reloadBtn").addEventListener("click", refresh);
       $("addRowBtn").addEventListener("click", () => addRow());
       $("submitBtn").addEventListener("click", submit);
+      $("storeSearch").addEventListener("input", () => {
+        renderStores();
+      });
       $("storeSelect").addEventListener("change", () => {
         renderStoreMeta();
         refreshHistory().catch((error) => toast(error.message));

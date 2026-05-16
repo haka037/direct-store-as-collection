@@ -417,6 +417,190 @@
       .hidden {
         display: none !important;
       }
+      .acw {
+        position: relative;
+      }
+      .acl {
+        position: absolute;
+        top: calc(100% + 5px);
+        left: 0;
+        right: 0;
+        z-index: 40;
+        max-height: 260px;
+        overflow: auto;
+        border: 1px solid var(--border-2);
+        border-radius: var(--radius);
+        background: var(--surface-2);
+        box-shadow: var(--shadow);
+      }
+      .aci {
+        width: 100%;
+        min-height: 0;
+        justify-content: flex-start;
+        border: 0;
+        border-bottom: 1px solid rgba(45, 54, 85, 0.45);
+        border-radius: 0;
+        background: transparent;
+        color: var(--text);
+        padding: 9px 11px;
+        text-align: left;
+      }
+      .aci:hover,
+      .aci.active {
+        background: var(--surface-3);
+        color: #fff;
+      }
+      .aci small {
+        display: block;
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 500;
+      }
+      .recent-row {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 9px;
+        padding-top: 9px;
+        border-top: 1px solid rgba(45, 54, 85, 0.55);
+      }
+      .recent-row span {
+        color: var(--faint);
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        min-height: 28px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--surface-2);
+        color: var(--muted);
+        padding: 5px 10px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 800;
+        white-space: nowrap;
+      }
+      .chip:hover,
+      .chip.active {
+        border-color: var(--brand);
+        color: #fff;
+        background: rgba(79, 142, 247, 0.18);
+      }
+      .bulk-tools {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+        border: 1px solid rgba(45, 54, 85, 0.75);
+        border-radius: var(--radius);
+        background: var(--surface-2);
+        padding: 10px;
+      }
+      .bulk-tools span {
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 800;
+      }
+      .bulk-tools select {
+        width: auto;
+        min-width: 145px;
+        min-height: 32px;
+      }
+      .row-check {
+        width: 17px;
+        height: 17px;
+        min-height: 0;
+        padding: 0;
+      }
+      .modal {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(4, 7, 13, 0.72);
+        padding: 18px;
+      }
+      .modal.open {
+        display: flex;
+      }
+      .modal-panel {
+        display: flex;
+        flex-direction: column;
+        width: min(980px, 100%);
+        max-height: min(780px, calc(100vh - 36px));
+        border: 1px solid var(--border-2);
+        border-radius: var(--radius-lg);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+      .modal-head,
+      .modal-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .modal-foot {
+        border-top: 1px solid var(--border);
+        border-bottom: 0;
+      }
+      .modal-body {
+        display: grid;
+        gap: 12px;
+        min-height: 0;
+        padding: 16px;
+        overflow: auto;
+      }
+      .picker-tools,
+      .picker-cats {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .picker-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .picker-item {
+        display: grid;
+        grid-template-columns: 20px minmax(0, 1fr) 74px;
+        align-items: center;
+        gap: 9px;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        background: var(--surface-2);
+        padding: 9px;
+      }
+      .picker-item.selected {
+        border-color: rgba(79, 142, 247, 0.75);
+        background: rgba(79, 142, 247, 0.12);
+      }
+      .picker-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-weight: 800;
+      }
+      .picker-meta {
+        margin-top: 2px;
+        color: var(--muted);
+        font-size: 11px;
+      }
       .toast {
         position: fixed;
         left: 50%;
@@ -448,6 +632,9 @@
       }
       .product-cell input {
         min-width: 250px;
+      }
+      .product-cell .acl {
+        min-width: 360px;
       }
       @media (max-width: 820px) {
         .shell {
@@ -498,6 +685,16 @@
         th,
         td {
           min-width: 130px;
+        }
+        .bulk-tools select,
+        .bulk-tools .btn {
+          width: 100%;
+        }
+        .picker-list {
+          grid-template-columns: 1fr;
+        }
+        .product-cell .acl {
+          min-width: 0;
         }
       }
     </style>
@@ -563,14 +760,27 @@
               <div class="form-stack">
                 <div class="muted status-line" id="connectionStatus">매장과 제품 목록을 불러오는 중입니다.</div>
                 <div>
-                  <label for="storeSelect">매장</label>
-                  <div class="field-stack">
-                    <input id="storeSearch" placeholder="매장명·지역·코드 검색" autocomplete="off" />
-                    <select id="storeSelect">
-                      <option value="">매장 선택</option>
-                    </select>
+                  <label for="storeInput">수거 매장명</label>
+                  <div class="acw">
+                    <input id="storeInput" placeholder="매장명 입력 (예: 군포, ㄱㅍ)" autocomplete="off" />
+                    <div class="acl hidden" id="storeAC"></div>
                   </div>
-                  <div class="muted" id="storeMeta"></div>
+                  <div class="recent-row hidden" id="recentStores"></div>
+                </div>
+                <div class="grid top-grid">
+                  <div>
+                    <label for="storeRegion">지역</label>
+                    <input id="storeRegion" data-locked="true" disabled />
+                  </div>
+                  <div>
+                    <label for="storeRoute">배송코스</label>
+                    <input id="storeRoute" data-locked="true" disabled />
+                  </div>
+                  <div>
+                    <label for="storeCode">매장코드</label>
+                    <input id="storeCode" data-locked="true" disabled />
+                  </div>
+                  <div class="muted" id="storeMeta" style="grid-column:1/-1"></div>
                 </div>
                 <div class="grid top-grid">
                   <div>
@@ -591,13 +801,29 @@
                   <div class="card-title">AS 수거 품목</div>
                   <div class="sub">품목을 추가한 뒤 한 번에 ERP로 등록합니다.</div>
                 </div>
-                <button class="btn" id="addRowBtn" type="button">행 추가</button>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button class="btn primary" id="openPickerBtn" type="button">제품 선택</button>
+                  <button class="btn" id="addRowBtn" type="button">직접 입력</button>
+                </div>
+              </div>
+
+              <div class="bulk-tools">
+                <span>공통 설정</span>
+                <select id="commonDiv">
+                  <option value="">구분 선택</option>
+                </select>
+                <select id="commonCharge">
+                  <option value="">유/무상 선택</option>
+                </select>
+                <button class="btn" id="applyCommonBtn" type="button">선택 행 적용</button>
+                <span id="commonHint">미선택 시 전체 행에 적용됩니다.</span>
               </div>
 
               <div class="table-wrap">
                 <table>
                   <thead>
                     <tr>
+                      <th style="width:40px"><input class="row-check" id="rowCheckAll" type="checkbox" /></th>
                       <th style="min-width:260px">제품</th>
                       <th style="min-width:150px">구분</th>
                       <th style="min-width:130px">유/무상</th>
@@ -648,17 +874,48 @@
       </main>
     </div>
 
+    <div class="modal" id="productPicker" role="dialog" aria-modal="true" aria-labelledby="productPickerTitle">
+      <div class="modal-panel">
+        <div class="modal-head">
+          <div>
+            <div class="card-title" id="productPickerTitle">제품 선택</div>
+            <div class="muted">여러 제품을 선택해 한 번에 품목 목록에 추가합니다.</div>
+          </div>
+          <button class="btn" id="closePickerBtn" type="button">닫기</button>
+        </div>
+        <div class="modal-body">
+          <div class="picker-tools">
+            <input id="pickerSearch" placeholder="제품명·품번·바코드 검색" autocomplete="off" />
+            <button class="btn" id="pickerClearBtn" type="button">선택 초기화</button>
+          </div>
+          <div class="picker-cats" id="pickerCats"></div>
+          <div class="picker-list" id="pickerList"></div>
+        </div>
+        <div class="modal-foot">
+          <div class="muted" id="pickerSelectedInfo">선택된 제품 0개</div>
+          <button class="btn primary" id="addPickerSelectedBtn" type="button">선택 제품 추가</button>
+        </div>
+      </div>
+    </div>
+
     <div id="toast" class="toast hidden"></div>
 
     <script>
       const DEFAULT_API_BASE = "https://second-erp-production.up.railway.app";
       const divisions = ["즉시처리", "예외조치", "보상판매 에어릭스", "보상판매 R", "보상판매 H", "본사별도수거 박시영", "본사별도수거 이지영"];
       const charges = ["무상", "유상", "수거", "초기불량(팟)"];
+      const recentStoreKey = "direct-store-as-recent-stores";
+      const cho = ["ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
       const state = {
         stores: [],
         products: [],
         requests: [],
-        loading: false
+        loading: false,
+        selectedStoreCode: ""
+      };
+      const picker = {
+        category: "all",
+        selected: new Map()
       };
 
       const $ = (id) => document.getElementById(id);
@@ -699,6 +956,7 @@
       function setLoading(value) {
         state.loading = value;
         document.querySelectorAll("button, input, select, textarea").forEach((el) => {
+          if (el.dataset.locked === "true") return;
           el.disabled = value;
         });
       }
@@ -721,9 +979,24 @@
         return String(value ?? "").toLowerCase().replace(/\s+/g, "");
       }
 
+      function choChar(char) {
+        const code = char.charCodeAt(0);
+        if (code < 0xac00 || code > 0xd7a3) return char;
+        return cho[Math.floor((code - 0xac00) / 588)];
+      }
+
+      function choText(value) {
+        return [...String(value ?? "")].map(choChar).join("");
+      }
+
       function containsSearch(haystack, search) {
         if (!search) return true;
-        return normalizeSearch(haystack).includes(search);
+        const query = normalizeSearch(search);
+        if (normalizeSearch(haystack).includes(query)) return true;
+        if ([...query].every((char) => cho.includes(char))) {
+          return normalizeSearch(choText(haystack)).includes(query);
+        }
+        return false;
       }
 
       function storeSearchText(store) {
@@ -750,99 +1023,427 @@
         ].join(" ");
       }
 
-      function filteredStores(selected = "") {
-        const search = normalizeSearch($("storeSearch").value);
-        const rows = state.stores.filter((store) => containsSearch(storeSearchText(store), search));
-        const selectedStore = selected ? state.stores.find((store) => store.storeCode === selected) : null;
-        if (selectedStore && !rows.some((store) => store.storeCode === selectedStore.storeCode)) {
-          return [selectedStore, ...rows];
-        }
-        return rows;
+      function filteredStores(query = $("storeInput").value) {
+        return state.stores.filter((store) => containsSearch(storeSearchText(store), query));
       }
 
-      function renderStores() {
-        const selected = $("storeSelect").value;
-        $("storeSelect").innerHTML = `<option value="">매장 선택</option>` + filteredStores(selected)
-          .map((store) => optionHtml(store.storeCode, `${store.storeName} · ${store.region || "미분류"} · ${store.storeCode}`, selected))
-          .join("");
-        renderStoreMeta();
+      function storeSubtitle(store) {
+        return `${store.region || "미분류"} · ${store.deliveryRoute || store.deliveryDayOfWeek || "-"} · ${store.amsStoreCode || store.storeCode}`;
       }
 
       function renderStoreMeta() {
-        const store = state.stores.find((item) => item.storeCode === $("storeSelect").value);
+        const store = state.stores.find((item) => item.storeCode === state.selectedStoreCode);
+        $("storeRegion").value = store?.region || "";
+        $("storeRoute").value = store?.deliveryRoute || store?.deliveryDayOfWeek || "";
+        $("storeCode").value = store?.amsStoreCode || store?.storeCode || "";
         if (store) {
-          $("storeMeta").textContent = `${store.region || "미분류"} / ${store.deliveryRoute || store.deliveryDayOfWeek || "-"} / ${store.amsStoreCode || store.storeCode}`;
+          $("storeMeta").textContent = store.address || store.phone || "";
           return;
         }
-
-        const search = $("storeSearch").value.trim();
-        $("storeMeta").textContent = search ? `검색 결과 ${filteredStores().length}개` : "";
+        const search = $("storeInput").value.trim();
+        $("storeMeta").textContent = search ? `검색 결과 ${filteredStores(search).length}개` : "";
       }
 
-      function filteredProducts(searchText = "", selected = "") {
-        const search = normalizeSearch(searchText);
-        const rows = state.products.filter((product) => containsSearch(productSearchText(product), search));
-        const selectedProduct = selected ? state.products.find((product) => product.skuCode === selected) : null;
-        if (selectedProduct && !rows.some((product) => product.skuCode === selectedProduct.skuCode)) {
-          return [selectedProduct, ...rows];
+      function showStoreAutocomplete() {
+        const list = $("storeAC");
+        const query = $("storeInput").value.trim();
+        if (!query) {
+          list.classList.add("hidden");
+          renderStoreMeta();
+          return;
         }
-        return rows;
+        const rows = filteredStores(query).slice(0, 12);
+        if (!rows.length) {
+          list.innerHTML = `<button class="btn aci" type="button" disabled>일치하는 매장이 없습니다.</button>`;
+          list.classList.remove("hidden");
+          renderStoreMeta();
+          return;
+        }
+        list.innerHTML = rows.map((store) => `
+          <button class="btn aci" type="button" data-store-code="${escapeHtml(store.storeCode)}">
+            <span>${escapeHtml(store.storeName)}</span>
+            <small>${escapeHtml(storeSubtitle(store))}</small>
+          </button>
+        `).join("");
+        list.querySelectorAll("[data-store-code]").forEach((button) => {
+          button.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+            selectStore(button.dataset.storeCode);
+          });
+        });
+        list.classList.remove("hidden");
+        renderStoreMeta();
       }
 
-      function productOptions(selected = "", searchText = "") {
-        const products = filteredProducts(searchText, selected);
-        const suffix = searchText.trim() && products.length === 0 ? "검색 결과 없음" : "제품 선택";
-        return `<option value="">${suffix}</option>` + products
-          .map((product) => optionHtml(product.skuCode, `${product.name} · ${product.skuCode}`, selected))
-          .join("");
+      function readRecentStores() {
+        try {
+          return JSON.parse(localStorage.getItem(recentStoreKey) || "[]").filter(Boolean);
+        } catch {
+          return [];
+        }
+      }
+
+      function saveRecentStore(code) {
+        const recent = readRecentStores().filter((item) => item !== code);
+        recent.unshift(code);
+        localStorage.setItem(recentStoreKey, JSON.stringify(recent.slice(0, 5)));
+        renderRecentStores();
+      }
+
+      function renderRecentStores() {
+        const recent = readRecentStores()
+          .map((code) => state.stores.find((store) => store.storeCode === code))
+          .filter(Boolean);
+        const box = $("recentStores");
+        if (!recent.length) {
+          box.classList.add("hidden");
+          box.innerHTML = "";
+          return;
+        }
+        box.classList.remove("hidden");
+        box.innerHTML = `<span>최근</span>` + recent.map((store) => `
+          <button class="chip" type="button" data-store-code="${escapeHtml(store.storeCode)}">${escapeHtml(store.storeName.replace("직영점", ""))}</button>
+        `).join("");
+        box.querySelectorAll("[data-store-code]").forEach((button) => {
+          button.addEventListener("click", () => selectStore(button.dataset.storeCode));
+        });
+      }
+
+      function selectStore(code) {
+        const store = state.stores.find((item) => item.storeCode === code);
+        if (!store) return;
+        state.selectedStoreCode = store.storeCode;
+        $("storeInput").value = store.storeName;
+        $("storeAC").classList.add("hidden");
+        renderStoreMeta();
+        saveRecentStore(store.storeCode);
+        refreshHistory().catch((error) => toast(error.message));
       }
 
       function selectOptions(items, selected = "") {
         return items.map((item) => optionHtml(item, item, selected)).join("");
       }
 
+      let rowSeq = 0;
+
+      function filteredProducts(searchText = "") {
+        return state.products.filter((product) => containsSearch(productSearchText(product), searchText));
+      }
+
+      function productFamily(product) {
+        const sku = String(product?.skuCode || "");
+        const categoryCode = String(product?.categoryCode || "");
+        const name = String(product?.name || "");
+        if (sku.startsWith("SIG")) return "시그니처";
+        if (sku.startsWith("HAKAR")) return "하카 R";
+        if (sku.startsWith("HAKAB")) return "하카 B";
+        if (sku.startsWith("HAKAH2")) return "하카 H2";
+        if (sku.startsWith("HAKAH")) return "하카 H";
+        if (sku.startsWith("HAKAQ")) return "하카 Q";
+        if (sku.startsWith("HNB")) return "HNB";
+        if (sku.startsWith("DP") || name.startsWith("DP")) return "DP";
+        if (categoryCode.startsWith("COM")) return "공용/부자재";
+        return "기타";
+      }
+
+      function productDisplay(product) {
+        return product?.name || "";
+      }
+
+      function productMeta(product) {
+        return [product?.skuCode, product?.barcode || "바코드 없음", product?.category?.name].filter(Boolean).join(" · ");
+      }
+
+      function initializeStaticSelects() {
+        $("commonDiv").innerHTML = `<option value="">구분 선택</option>${selectOptions(divisions)}`;
+        $("commonCharge").innerHTML = `<option value="">유/무상 선택</option>${selectOptions(charges)}`;
+      }
+
+      function showProductAutocomplete(tr) {
+        const input = tr.querySelector(".product-input");
+        const list = tr.querySelector(".product-ac");
+        const query = input.value.trim();
+        const rows = filteredProducts(query).slice(0, 12);
+        if (!query) {
+          list.classList.add("hidden");
+          return;
+        }
+        if (!rows.length) {
+          list.innerHTML = `<button class="btn aci" type="button" disabled>일치하는 제품이 없습니다.</button>`;
+          list.classList.remove("hidden");
+          return;
+        }
+        list.innerHTML = rows.map((product) => `
+          <button class="btn aci" type="button" data-sku="${escapeHtml(product.skuCode)}">
+            <span>${escapeHtml(productDisplay(product))}</span>
+            <small>${escapeHtml(productMeta(product))}</small>
+          </button>
+        `).join("");
+        list.querySelectorAll("[data-sku]").forEach((button) => {
+          button.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+            selectProductForRow(tr, button.dataset.sku);
+          });
+        });
+        list.classList.remove("hidden");
+      }
+
+      function selectProductForRow(tr, skuCode) {
+        const product = state.products.find((item) => item.skuCode === skuCode);
+        if (!product) return;
+        tr.querySelector(".product-input").value = productDisplay(product);
+        tr.querySelector(".product-code").value = product.skuCode;
+        tr.querySelector(".product-ac").classList.add("hidden");
+      }
+
+      function updateCommonHint() {
+        const checked = document.querySelectorAll(".row-check.item:checked").length;
+        $("commonHint").textContent = checked ? `${checked}개 행에 적용됩니다.` : "미선택 시 전체 행에 적용됩니다.";
+        const all = document.querySelectorAll(".row-check.item");
+        const allCheck = $("rowCheckAll");
+        allCheck.checked = all.length > 0 && checked === all.length;
+        allCheck.indeterminate = checked > 0 && checked < all.length;
+      }
+
+      function applyCommonToRows() {
+        const division = $("commonDiv").value;
+        const charge = $("commonCharge").value;
+        if (!division && !charge) {
+          toast("구분 또는 유/무상을 선택해 주세요.");
+          return;
+        }
+        const checkedRows = Array.from(document.querySelectorAll(".row-check.item:checked")).map((check) => check.closest("tr"));
+        const rows = checkedRows.length ? checkedRows : Array.from($("itemBody").querySelectorAll("tr"));
+        rows.forEach((tr) => {
+          if (division) tr.querySelector(".division").value = division;
+          if (charge) tr.querySelector(".charge").value = charge;
+          tr.querySelector(".row-check.item").checked = false;
+        });
+        $("rowCheckAll").checked = false;
+        $("rowCheckAll").indeterminate = false;
+        updateCommonHint();
+        toast(`${rows.length}개 행에 적용했습니다.`);
+      }
+
       function addRow(row = {}) {
+        const product = row.productSkuCode ? state.products.find((item) => item.skuCode === row.productSkuCode) : null;
         const tr = document.createElement("tr");
+        tr.dataset.rowId = String(++rowSeq);
         tr.innerHTML = `
+          <td><input class="row-check item" type="checkbox" /></td>
           <td>
-            <div class="product-cell">
-              <input class="product-search" placeholder="제품명·품번·바코드 검색" autocomplete="off" value="${escapeHtml(row.productSearch || "")}" />
-              <select class="product">${productOptions(row.productSkuCode || "", row.productSearch || "")}</select>
+            <div class="product-cell acw">
+              <input class="product-input" placeholder="제품명·품번·바코드 검색" autocomplete="off" value="${escapeHtml(row.productName || productDisplay(product) || row.productSearch || "")}" />
+              <input class="product-code" type="hidden" value="${escapeHtml(row.productSkuCode || "")}" />
+              <div class="acl product-ac hidden"></div>
             </div>
           </td>
-          <td><select class="division">${selectOptions(divisions, row.division || divisions[0])}</select></td>
-          <td><select class="charge">${selectOptions(charges, row.charge || charges[0])}</select></td>
+          <td><select class="division">${selectOptions(divisions, row.division || $("commonDiv").value || divisions[0])}</select></td>
+          <td><select class="charge">${selectOptions(charges, row.charge || $("commonCharge").value || charges[0])}</select></td>
           <td><input class="qty" type="number" min="1" value="${escapeHtml(row.qty || "1")}" /></td>
           <td><input class="memo" value="${escapeHtml(row.memo || "")}" /></td>
           <td><button class="btn remove" type="button">삭제</button></td>
         `;
         tr.querySelector(".remove").addEventListener("click", () => {
           if ($("itemBody").children.length > 1) tr.remove();
+          updateCommonHint();
         });
-        tr.querySelector(".product-search").addEventListener("input", (event) => {
-          const select = tr.querySelector(".product");
-          const selected = select.value;
-          select.innerHTML = productOptions(selected, event.target.value);
-          if (!Array.from(select.options).some((option) => option.value === selected)) select.value = "";
+        tr.querySelector(".row-check.item").addEventListener("change", updateCommonHint);
+        tr.querySelector(".product-input").addEventListener("input", () => {
+          tr.querySelector(".product-code").value = "";
+          showProductAutocomplete(tr);
+        });
+        tr.querySelector(".product-input").addEventListener("focus", () => showProductAutocomplete(tr));
+        tr.querySelector(".product-input").addEventListener("blur", () => {
+          if (!tr.querySelector(".product-code").value) {
+            const exact = findExactProductByInput(tr.querySelector(".product-input").value);
+            if (exact) selectProductForRow(tr, exact.skuCode);
+          }
+          window.setTimeout(() => tr.querySelector(".product-ac").classList.add("hidden"), 140);
         });
         $("itemBody").appendChild(tr);
+        updateCommonHint();
+        return tr;
       }
 
       function rowsPayload() {
         return Array.from($("itemBody").querySelectorAll("tr"))
           .map((tr) => {
-            const productSkuCode = tr.querySelector(".product").value;
+            const productSkuCode = tr.querySelector(".product-code").value;
             const product = state.products.find((item) => item.skuCode === productSkuCode);
             return {
               productSkuCode,
-              productName: product?.name || "",
+              productName: product?.name || tr.querySelector(".product-input").value.trim(),
               division: tr.querySelector(".division").value,
               charge: tr.querySelector(".charge").value,
               qty: Number(tr.querySelector(".qty").value || 0),
               memo: tr.querySelector(".memo").value.trim()
             };
           })
-          .filter((row) => row.productSkuCode || row.qty > 0 || row.memo);
+          .filter((row) => row.productSkuCode || row.productName || row.memo);
+      }
+
+      function pickerCategoryList() {
+        const labels = ["all", "시그니처", "하카 R", "하카 B", "하카 H", "하카 H2", "하카 Q", "HNB", "공용/부자재", "DP", "기타"];
+        return labels
+          .map((label) => ({
+            label,
+            count: label === "all" ? state.products.length : state.products.filter((product) => productFamily(product) === label).length
+          }))
+          .filter((item) => item.label === "all" || item.count > 0);
+      }
+
+      function renderPickerCategories() {
+        $("pickerCats").innerHTML = pickerCategoryList().map((item) => `
+          <button class="chip${item.label === picker.category ? " active" : ""}" type="button" data-category="${escapeHtml(item.label)}">
+            ${escapeHtml(item.label === "all" ? "전체" : item.label)} ${escapeHtml(item.count)}
+          </button>
+        `).join("");
+        $("pickerCats").querySelectorAll("[data-category]").forEach((button) => {
+          button.addEventListener("click", () => {
+            picker.category = button.dataset.category;
+            renderPicker();
+          });
+        });
+      }
+
+      function pickerFilteredProducts() {
+        const query = $("pickerSearch").value.trim();
+        let rows = state.products;
+        if (picker.category !== "all") rows = rows.filter((product) => productFamily(product) === picker.category);
+        if (query) rows = rows.filter((product) => containsSearch(productSearchText(product), query));
+        return rows;
+      }
+
+      function updatePickerSelectedInfo() {
+        const totalQty = Array.from(picker.selected.values()).reduce((sum, qty) => sum + Number(qty || 0), 0);
+        $("pickerSelectedInfo").textContent = `선택된 제품 ${picker.selected.size}개 / 수량 ${totalQty}개`;
+      }
+
+      function renderPicker() {
+        renderPickerCategories();
+        const rows = pickerFilteredProducts();
+        const visible = rows.slice(0, 160);
+        if (!visible.length) {
+          $("pickerList").innerHTML = `<div class="muted" style="padding:26px;text-align:center;grid-column:1/-1">검색 결과가 없습니다.</div>`;
+          updatePickerSelectedInfo();
+          return;
+        }
+        $("pickerList").innerHTML = visible.map((product) => {
+          const selected = picker.selected.has(product.skuCode);
+          const qty = picker.selected.get(product.skuCode) || 1;
+          return `
+            <div class="picker-item${selected ? " selected" : ""}" data-sku="${escapeHtml(product.skuCode)}">
+              <input class="row-check picker-check" type="checkbox" ${selected ? "checked" : ""} />
+              <div style="min-width:0">
+                <div class="picker-name" title="${escapeHtml(productDisplay(product))}">${escapeHtml(productDisplay(product))}</div>
+                <div class="picker-meta">${escapeHtml(productMeta(product))}</div>
+              </div>
+              <input class="picker-qty" type="number" min="1" value="${escapeHtml(qty)}" />
+            </div>
+          `;
+        }).join("") + (rows.length > visible.length ? `<div class="muted" style="grid-column:1/-1;text-align:center;padding:8px">검색 결과가 많아 ${visible.length}개까지만 표시합니다.</div>` : "");
+        $("pickerList").querySelectorAll(".picker-item").forEach((item) => {
+          const sku = item.dataset.sku;
+          const check = item.querySelector(".picker-check");
+          const qtyInput = item.querySelector(".picker-qty");
+          check.addEventListener("change", () => {
+            if (check.checked) picker.selected.set(sku, Math.max(1, Number(qtyInput.value || 1)));
+            else picker.selected.delete(sku);
+            renderPicker();
+          });
+          qtyInput.addEventListener("input", () => {
+            const qty = Math.max(1, Number(qtyInput.value || 1));
+            if (picker.selected.has(sku)) picker.selected.set(sku, qty);
+            updatePickerSelectedInfo();
+          });
+          qtyInput.addEventListener("focus", () => {
+            if (!picker.selected.has(sku)) {
+              picker.selected.set(sku, Math.max(1, Number(qtyInput.value || 1)));
+              renderPicker();
+            }
+          });
+        });
+        updatePickerSelectedInfo();
+      }
+
+      function openProductPicker() {
+        picker.category = "all";
+        $("pickerSearch").value = "";
+        renderPicker();
+        $("productPicker").classList.add("open");
+        window.setTimeout(() => $("pickerSearch").focus(), 50);
+      }
+
+      function closeProductPicker() {
+        $("productPicker").classList.remove("open");
+      }
+
+      function clearPickerSelected() {
+        picker.selected.clear();
+        renderPicker();
+      }
+
+      function addPickerSelected() {
+        const rows = Array.from(picker.selected.entries());
+        if (!rows.length) {
+          toast("선택된 제품이 없습니다.");
+          return;
+        }
+        rows.forEach(([skuCode, qty]) => addRow({
+          productSkuCode: skuCode,
+          qty,
+          division: $("commonDiv").value || divisions[0],
+          charge: $("commonCharge").value || charges[0]
+        }));
+        clearPickerSelected();
+        closeProductPicker();
+        toast(`${rows.length}개 제품을 추가했습니다.`);
+      }
+
+      function findExactProductByInput(value) {
+        const query = normalizeSearch(value);
+        if (!query) return null;
+        return state.products.find((product) => (
+          normalizeSearch(product.skuCode) === query ||
+          normalizeSearch(product.barcode) === query ||
+          normalizeSearch(product.name) === query
+        )) || null;
+      }
+
+      function findProductByInput(value) {
+        return findExactProductByInput(value) || filteredProducts(value)[0] || null;
+      }
+
+      function fillRowFromPaste(tr, values) {
+        const [productText = "", divisionText = "", chargeText = "", qtyText = "", memoText = ""] = values.map((value) => value.trim());
+        const product = findProductByInput(productText);
+        tr.querySelector(".product-input").value = product ? productDisplay(product) : productText;
+        tr.querySelector(".product-code").value = product?.skuCode || "";
+        const division = divisions.find((item) => normalizeSearch(item) === normalizeSearch(divisionText));
+        const charge = charges.find((item) => normalizeSearch(item) === normalizeSearch(chargeText));
+        if (division) tr.querySelector(".division").value = division;
+        if (charge) tr.querySelector(".charge").value = charge;
+        if (qtyText) tr.querySelector(".qty").value = String(Math.max(1, Number(qtyText) || 1));
+        if (memoText) tr.querySelector(".memo").value = memoText;
+      }
+
+      function handleItemPaste(event) {
+        const active = document.activeElement;
+        if (!active || !active.closest("#itemBody")) return;
+        const text = event.clipboardData?.getData("text") || "";
+        if (!text.includes("\t") && !text.includes("\n")) return;
+        event.preventDefault();
+        const lines = text.split(/\r?\n/).filter((line) => line.trim());
+        if (!lines.length) return;
+        const currentRows = Array.from($("itemBody").querySelectorAll("tr"));
+        const startIndex = Math.max(0, currentRows.indexOf(active.closest("tr")));
+        lines.forEach((line, offset) => {
+          const rows = Array.from($("itemBody").querySelectorAll("tr"));
+          const tr = rows[startIndex + offset] || addRow();
+          fillRowFromPaste(tr, line.split("\t"));
+        });
+        toast(`${lines.length}개 행을 붙여넣었습니다.`);
       }
 
       function statusLabel(status) {
@@ -889,7 +1490,12 @@
           ]);
           state.stores = stores.items || [];
           state.products = products.items || [];
-          renderStores();
+          if (state.selectedStoreCode && !state.stores.some((store) => store.storeCode === state.selectedStoreCode)) {
+            state.selectedStoreCode = "";
+            $("storeInput").value = "";
+          }
+          renderStoreMeta();
+          renderRecentStores();
           $("itemBody").innerHTML = "";
           addRow();
           await refreshHistory();
@@ -903,7 +1509,7 @@
       }
 
       async function refreshHistory() {
-        const storeCode = $("storeSelect").value;
+        const storeCode = state.selectedStoreCode;
         if (!storeCode) {
           state.requests = [];
           renderSummary();
@@ -921,9 +1527,9 @@
           toast("매장과 제품 목록을 불러오는 중입니다.");
           return;
         }
-        const storeCode = $("storeSelect").value;
+        const storeCode = state.selectedStoreCode;
         if (!storeCode) {
-          toast("매장을 선택해 주세요.");
+          toast("목록에서 매장을 선택해 주세요.");
           return;
         }
         const items = rowsPayload();
@@ -975,14 +1581,40 @@
 
       $("reloadBtn").addEventListener("click", refresh);
       $("addRowBtn").addEventListener("click", () => addRow());
+      $("openPickerBtn").addEventListener("click", openProductPicker);
       $("submitBtn").addEventListener("click", submit);
-      $("storeSearch").addEventListener("input", () => {
-        renderStores();
+      $("applyCommonBtn").addEventListener("click", applyCommonToRows);
+      $("rowCheckAll").addEventListener("change", (event) => {
+        document.querySelectorAll(".row-check.item").forEach((check) => {
+          check.checked = event.target.checked;
+        });
+        updateCommonHint();
       });
-      $("storeSelect").addEventListener("change", () => {
+      $("storeInput").addEventListener("input", () => {
+        state.selectedStoreCode = "";
         renderStoreMeta();
-        refreshHistory().catch((error) => toast(error.message));
+        showStoreAutocomplete();
       });
+      $("storeInput").addEventListener("focus", showStoreAutocomplete);
+      $("storeInput").addEventListener("blur", () => {
+        window.setTimeout(() => $("storeAC").classList.add("hidden"), 140);
+      });
+      $("pickerSearch").addEventListener("input", renderPicker);
+      $("closePickerBtn").addEventListener("click", closeProductPicker);
+      $("pickerClearBtn").addEventListener("click", clearPickerSelected);
+      $("addPickerSelectedBtn").addEventListener("click", addPickerSelected);
+      $("productPicker").addEventListener("mousedown", (event) => {
+        if (event.target === $("productPicker")) closeProductPicker();
+      });
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") {
+          $("storeAC").classList.add("hidden");
+          document.querySelectorAll(".product-ac").forEach((list) => list.classList.add("hidden"));
+          closeProductPicker();
+        }
+      });
+      document.addEventListener("paste", handleItemPaste);
+      initializeStaticSelects();
       addRow();
       refresh().catch((error) => toast(error.message));
     </script>

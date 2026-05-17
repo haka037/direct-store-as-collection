@@ -1623,7 +1623,7 @@
         try {
           const [stores, products] = await Promise.all([
             api("/api/direct-store-as-collection/stores"),
-            api("/api/direct-store-as-collection/products?limit=1000")
+            api("/api/direct-store-as-collection/products?limit=1000&scope=pos")
           ]);
           state.stores = stores.items || [];
           state.products = products.items || [];
@@ -1636,7 +1636,7 @@
           $("itemBody").innerHTML = "";
           addRow();
           await refreshHistory();
-          setConnectionStatus(`${state.stores.length}개 매장, ${state.products.length}개 제품을 불러왔습니다.`, "ok");
+          setConnectionStatus(`${state.stores.length}개 매장, POS 제품 ${state.products.length}개를 불러왔습니다.`, "ok");
         } catch (error) {
           setConnectionStatus(error.message || "데이터를 불러오지 못했습니다.", "warn");
           toast(error.message || "데이터를 불러오지 못했습니다.");

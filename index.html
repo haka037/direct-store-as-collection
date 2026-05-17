@@ -701,12 +701,97 @@
         td {
           min-width: 130px;
         }
+        .item-table-wrap,
+        .history-table-wrap {
+          overflow: visible;
+        }
+        .item-table,
+        .history-table,
+        .item-table tbody,
+        .history-table tbody,
+        .item-table tr,
+        .history-table tr,
+        .item-table td,
+        .history-table td {
+          display: block;
+          width: 100%;
+        }
+        .item-table thead,
+        .history-table thead {
+          display: none;
+        }
+        .item-table tbody,
+        .history-table tbody {
+          display: grid;
+          gap: 12px;
+        }
+        .item-table tr,
+        .history-table tr {
+          border: 1px solid var(--border);
+          border-radius: var(--radius-lg);
+          background: var(--surface-2);
+          padding: 12px;
+        }
+        .item-table td,
+        .history-table td {
+          display: grid;
+          grid-template-columns: 82px minmax(0, 1fr);
+          gap: 9px;
+          align-items: center;
+          min-width: 0;
+          border-bottom: 0;
+          padding: 7px 0;
+        }
+        .item-table td::before,
+        .history-table td::before {
+          content: attr(data-label);
+          color: var(--muted);
+          font-size: 11px;
+          font-weight: 800;
+        }
+        .item-table td.row-command,
+        .history-table td.empty-history {
+          display: block;
+        }
+        .item-table td.row-command::before,
+        .history-table td.empty-history::before {
+          content: none;
+        }
+        .item-table td.row-command > div {
+          display: grid !important;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px !important;
+        }
+        .item-table td.row-command .btn,
+        .history-table td.empty-history {
+          width: 100%;
+        }
+        .product-cell input {
+          min-width: 0;
+        }
         .bulk-tools select,
         .bulk-tools .btn {
           width: 100%;
         }
         .picker-list {
           grid-template-columns: 1fr;
+        }
+        .picker-item {
+          grid-template-columns: 20px minmax(0, 1fr) 64px;
+          align-items: start;
+        }
+        .picker-name {
+          overflow: visible;
+          text-overflow: clip;
+          white-space: normal;
+          line-height: 1.35;
+          word-break: keep-all;
+        }
+        .picker-meta {
+          word-break: break-all;
+        }
+        .picker-qty {
+          min-width: 0;
         }
         .product-cell .acl {
           min-width: 0;
@@ -865,8 +950,8 @@
                 Tab은 다음 칸, Enter는 같은 칸의 다음 행으로 이동합니다. 엑셀 복사값은 제품명 | 구분 | 유/무상 | 수량 | 메모 순서로 붙여넣을 수 있습니다.
               </div>
 
-              <div class="table-wrap">
-                <table>
+              <div class="table-wrap item-table-wrap">
+                <table class="item-table">
                   <thead>
                     <tr>
                       <th style="width:40px"><input class="row-check" id="rowCheckAll" type="checkbox" /></th>
@@ -898,8 +983,8 @@
               </div>
             </div>
             <div class="notice">최종확인 이후 수정은 ERP 본사 화면에서 처리합니다.</div>
-            <div class="table-wrap" style="margin-top:14px">
-              <table>
+            <div class="table-wrap history-table-wrap" style="margin-top:14px">
+              <table class="history-table">
                 <thead>
                   <tr>
                     <th>번호</th>
@@ -1357,20 +1442,20 @@
         const tr = document.createElement("tr");
         tr.dataset.rowId = String(++rowSeq);
         tr.innerHTML = `
-          <td><input class="row-check item" type="checkbox" /></td>
-          <td class="row-no"></td>
-          <td>
+          <td data-label="선택"><input class="row-check item" type="checkbox" /></td>
+          <td class="row-no" data-label="번호"></td>
+          <td data-label="제품">
             <div class="product-cell acw">
               <input class="product-input item-cell" data-cell="product" placeholder="제품명·품번·바코드 검색" autocomplete="off" value="${escapeHtml(row.productName || productDisplay(product) || row.productSearch || "")}" />
               <input class="product-code" type="hidden" value="${escapeHtml(row.productSkuCode || "")}" />
               <div class="acl product-ac hidden"></div>
             </div>
           </td>
-          <td><select class="division item-cell" data-cell="division">${selectOptions(divisions, row.division || $("commonDiv").value || divisions[0])}</select></td>
-          <td><select class="charge item-cell" data-cell="charge">${selectOptions(charges, row.charge || $("commonCharge").value || charges[0])}</select></td>
-          <td><input class="qty item-cell" data-cell="qty" type="number" min="1" value="${escapeHtml(row.qty || "1")}" /></td>
-          <td><input class="memo item-cell" data-cell="memo" value="${escapeHtml(row.memo || "")}" /></td>
-          <td>
+          <td data-label="구분"><select class="division item-cell" data-cell="division">${selectOptions(divisions, row.division || $("commonDiv").value || divisions[0])}</select></td>
+          <td data-label="유/무상"><select class="charge item-cell" data-cell="charge">${selectOptions(charges, row.charge || $("commonCharge").value || charges[0])}</select></td>
+          <td data-label="수량"><input class="qty item-cell" data-cell="qty" type="number" min="1" value="${escapeHtml(row.qty || "1")}" /></td>
+          <td data-label="메모"><input class="memo item-cell" data-cell="memo" value="${escapeHtml(row.memo || "")}" /></td>
+          <td class="row-command">
             <div style="display:flex;gap:6px;justify-content:flex-end">
               <button class="btn duplicate" type="button">복제</button>
               <button class="btn remove" type="button">삭제</button>
@@ -1604,17 +1689,17 @@
         const rows = state.requests;
         $("historyBody").innerHTML = rows.length ? rows.map((item) => `
           <tr>
-            <td><strong>${escapeHtml(item.seqId)}</strong></td>
-            <td>${escapeHtml(item.storeName || "-")}<div class="muted">${escapeHtml(item.region || "미분류")} / ${escapeHtml(item.route || "-")}</div></td>
-            <td>${escapeHtml(item.product)}<div class="muted">${escapeHtml(item.productSkuCode || "-")}</div></td>
-            <td>${escapeHtml(item.division || "-")}<div class="muted">${escapeHtml(item.charge || "-")}</div></td>
-            <td>${escapeHtml(item.qty)}</td>
-            <td><span class="badge ${escapeHtml(item.status)}">${escapeHtml(statusLabel(item.status))}</span></td>
-            <td>${escapeHtml(item.confirmDate || "-")}</td>
-            <td>${escapeHtml(item.pickExpDate || "-")}</td>
-            <td>${item.inboundQty == null ? "-" : `${escapeHtml(item.inboundQty)}개`}</td>
+            <td data-label="번호"><strong>${escapeHtml(item.seqId)}</strong></td>
+            <td data-label="매장">${escapeHtml(item.storeName || "-")}<div class="muted">${escapeHtml(item.region || "미분류")} / ${escapeHtml(item.route || "-")}</div></td>
+            <td data-label="제품">${escapeHtml(item.product)}<div class="muted">${escapeHtml(item.productSkuCode || "-")}</div></td>
+            <td data-label="구분">${escapeHtml(item.division || "-")}<div class="muted">${escapeHtml(item.charge || "-")}</div></td>
+            <td data-label="수량">${escapeHtml(item.qty)}</td>
+            <td data-label="상태"><span class="badge ${escapeHtml(item.status)}">${escapeHtml(statusLabel(item.status))}</span></td>
+            <td data-label="확인일자">${escapeHtml(item.confirmDate || "-")}</td>
+            <td data-label="수거예상">${escapeHtml(item.pickExpDate || "-")}</td>
+            <td data-label="입고">${item.inboundQty == null ? "-" : `${escapeHtml(item.inboundQty)}개`}</td>
           </tr>
-        `).join("") : `<tr><td colspan="9" class="muted" style="text-align:center;padding:32px">조회된 이력이 없습니다.</td></tr>`;
+        `).join("") : `<tr><td colspan="9" class="muted empty-history" style="text-align:center;padding:32px">조회된 이력이 없습니다.</td></tr>`;
       }
 
       async function refresh() {

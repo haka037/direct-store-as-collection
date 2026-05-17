@@ -313,6 +313,20 @@
         gap: 10px;
         margin-bottom: 14px;
       }
+      .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .dash-card {
+        display: grid;
+        gap: 10px;
+        align-content: start;
+        min-height: 170px;
+      }
+      .dash-card .btn {
+        justify-self: start;
+      }
       .stat {
         position: relative;
         overflow: hidden;
@@ -676,6 +690,7 @@
         .top-grid,
         .auth-grid,
         .summary,
+        .dashboard-grid,
         .team-layout {
           grid-template-columns: 1fr;
         }
@@ -712,9 +727,9 @@
           </div>
         </div>
         <div class="nav-sec">메인</div>
-        <button class="btn nav-item" type="button">대시보드</button>
+        <button class="btn nav-item active" type="button" data-nav-tab="dashboard">대시보드</button>
         <div class="nav-sec">AS 수거 신청</div>
-        <button class="btn nav-item active" type="button" data-nav-tab="form">수거 신청</button>
+        <button class="btn nav-item" type="button" data-nav-tab="form">수거 신청</button>
         <button class="btn nav-item" type="button" data-nav-tab="history">신청 이력</button>
         <div class="sidebar-bottom">
           <button class="btn nav-item" id="reloadBtn" type="button">새로고침</button>
@@ -748,11 +763,39 @@
           </section>
 
           <nav class="tabs">
-            <button class="btn tab active" data-tab="form">수거 신청</button>
+            <button class="btn tab active" data-tab="dashboard">대시보드</button>
+            <button class="btn tab" data-tab="form">수거 신청</button>
             <button class="btn tab" data-tab="history">신청 이력</button>
           </nav>
 
-          <section id="formTab" class="team-layout">
+          <section id="dashboardTab" class="dashboard-grid">
+            <div class="panel card dash-card">
+              <div>
+                <div class="card-title">수거 신청</div>
+                <div class="sub">매장과 제품을 선택해 AS 수거 요청을 등록합니다.</div>
+              </div>
+              <div class="muted">매장 자동완성, 최근 매장, 제품 선택 모달을 사용할 수 있습니다.</div>
+              <button class="btn primary" type="button" data-go-tab="form">신청 작성</button>
+            </div>
+            <div class="panel card dash-card">
+              <div>
+                <div class="card-title">신청 이력</div>
+                <div class="sub">선택한 매장의 신청 내역과 처리 상태를 확인합니다.</div>
+              </div>
+              <div class="muted">확인대기, 최종확인, 입고완료 상태를 ERP 원장 기준으로 봅니다.</div>
+              <button class="btn" type="button" data-go-tab="history">이력 보기</button>
+            </div>
+            <div class="panel card dash-card">
+              <div>
+                <div class="card-title">ERP 원장 연동</div>
+                <div class="sub" id="dashboardStatus">매장과 제품 목록을 불러오는 중입니다.</div>
+              </div>
+              <div class="muted">외부 팀장용 화면은 입력 전용이고, 본사 수정/관리는 ERP에서 처리합니다.</div>
+              <button class="btn" id="dashboardReloadBtn" type="button">데이터 새로고침</button>
+            </div>
+          </section>
+
+          <section id="formTab" class="team-layout hidden">
             <div class="panel card">
               <div class="card-hd">
                 <div class="card-title">신청 정보</div>
@@ -940,6 +983,8 @@
       function setConnectionStatus(message, tone = "") {
         $("connectionStatus").textContent = message;
         $("connectionStatus").dataset.tone = tone;
+        $("dashboardStatus").textContent = message;
+        $("dashboardStatus").dataset.tone = tone;
       }
 
       async function api(path, options = {}) {
@@ -1659,6 +1704,7 @@
           document.querySelectorAll("[data-nav-tab]").forEach((nav) => {
             nav.classList.toggle("active", nav.dataset.navTab === button.dataset.tab);
           });
+          $("dashboardTab").classList.toggle("hidden", button.dataset.tab !== "dashboard");
           $("formTab").classList.toggle("hidden", button.dataset.tab !== "form");
           $("historyTab").classList.toggle("hidden", button.dataset.tab !== "history");
           if (button.dataset.tab === "history") refreshHistory().catch((error) => toast(error.message));
@@ -1672,7 +1718,15 @@
         });
       });
 
+      document.querySelectorAll("[data-go-tab]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const target = document.querySelector(`.tab[data-tab="${button.dataset.goTab}"]`);
+          if (target) target.click();
+        });
+      });
+
       $("reloadBtn").addEventListener("click", refresh);
+      $("dashboardReloadBtn").addEventListener("click", refresh);
       $("addRowBtn").addEventListener("click", () => addRow());
       $("openPickerBtn").addEventListener("click", openProductPicker);
       $("submitBtn").addEventListener("click", submit);

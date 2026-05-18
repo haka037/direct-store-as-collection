@@ -865,7 +865,7 @@
             <div class="panel card dash-card">
               <div>
                 <div class="card-title">신청 이력</div>
-                <div class="sub">선택한 매장의 신청 내역과 처리 상태를 확인합니다.</div>
+                <div class="sub">전체 최근 이력과 선택 매장 이력을 확인합니다.</div>
               </div>
               <div class="muted">확인대기, 최종확인, 입고완료 상태를 ERP 원장 기준으로 봅니다.</div>
               <button class="btn" type="button" data-go-tab="history">이력 보기</button>
@@ -979,7 +979,7 @@
             <div class="card-hd">
               <div>
                 <div class="card-title">신청 이력</div>
-                <div class="sub">선택한 매장의 신청 이력만 표시합니다.</div>
+                <div class="sub" id="historyScopeText">매장 선택 전에는 전체 최근 이력을 표시합니다.</div>
               </div>
             </div>
             <div class="notice">최종확인 이후 수정은 ERP 본사 화면에서 처리합니다.</div>
@@ -1733,14 +1733,18 @@
       async function refreshHistory() {
         const storeCode = state.selectedStoreCode;
         if (!storeCode) {
-          state.requests = [];
-          renderSummary();
+          const data = await api("/api/direct-store-as-collection?status=ALL&limit=100");
+          state.requests = data.items || [];
+          renderSummary(data.summary || {});
+          $("historyScopeText").textContent = "매장 선택 전에는 전체 최근 100건을 표시합니다. 매장을 선택하면 해당 매장만 좁혀봅니다.";
           renderHistory();
           return;
         }
         const data = await api(`/api/direct-store-as-collection?status=ALL&storeCode=${encodeURIComponent(storeCode)}&limit=300`);
         state.requests = data.items || [];
         renderSummary(data.summary || {});
+        const store = state.stores.find((item) => item.storeCode === storeCode);
+        $("historyScopeText").textContent = `${store?.storeName || "선택 매장"} 신청 이력만 표시합니다.`;
         renderHistory();
       }
 

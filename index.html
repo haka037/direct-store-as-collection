@@ -1820,18 +1820,18 @@
       async function refreshHistory() {
         const storeCode = state.selectedStoreCode;
         if (!storeCode) {
-          const data = await api("/api/direct-store-as-collection?status=ALL&limit=100");
+          const data = await api("/api/direct-store-as-collection?status=ALL&limit=5000");
           state.requests = data.items || [];
           renderSummary(data.summary || {});
-          $("historyScopeText").textContent = "매장 선택 전에는 전체 최근 100건을 표시합니다. 매장을 선택하면 해당 매장만 좁혀봅니다.";
+          $("historyScopeText").textContent = "매장 선택 전에는 전체 신청 이력을 표시합니다. 매장을 선택하면 해당 매장만 좁혀봅니다.";
           renderHistory();
           return;
         }
-        const data = await api(`/api/direct-store-as-collection?status=ALL&storeCode=${encodeURIComponent(storeCode)}&limit=300`);
+        const data = await api(`/api/direct-store-as-collection?status=ALL&storeCode=${encodeURIComponent(storeCode)}&limit=5000`);
         state.requests = data.items || [];
         renderSummary(data.summary || {});
         const store = state.stores.find((item) => item.storeCode === storeCode);
-        $("historyScopeText").textContent = `${store?.storeName || "선택 매장"} 신청 이력만 표시합니다.`;
+        $("historyScopeText").textContent = `${store?.storeName || "선택 매장"} 전체 신청 이력만 표시합니다.`;
         renderHistory();
       }
 

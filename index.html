@@ -629,6 +629,10 @@
         padding: 10px 16px;
         box-shadow: var(--shadow);
       }
+      .special-division {
+        color: #ff6b6b;
+        font-weight: 900;
+      }
       .team-layout {
         display: grid;
         grid-template-columns: 400px minmax(0, 1fr);
@@ -994,8 +998,9 @@
                     <th>수량</th>
                     <th>상태</th>
                     <th>확인일자</th>
-                    <th>수거예상</th>
-                    <th>입고</th>
+                    <th>수거일</th>
+                    <th>입고일</th>
+                    <th>입고수량</th>
                   </tr>
                 </thead>
                 <tbody id="historyBody"></tbody>
@@ -1678,6 +1683,10 @@
         }[status] || status;
       }
 
+      function isSpecialDivision(division) {
+        return division === "본사별도수거 박시영" || division === "본사별도수거 이지영";
+      }
+
       function renderSummary(summary = {}) {
         $("statTotal").textContent = summary.total || 0;
         $("statPending").textContent = summary.pending || 0;
@@ -1692,14 +1701,15 @@
             <td data-label="번호"><strong>${escapeHtml(item.seqId)}</strong></td>
             <td data-label="매장">${escapeHtml(item.storeName || "-")}<div class="muted">${escapeHtml(item.region || "미분류")} / ${escapeHtml(item.route || "-")}</div></td>
             <td data-label="제품">${escapeHtml(item.product)}<div class="muted">${escapeHtml(item.productSkuCode || "-")}</div></td>
-            <td data-label="구분">${escapeHtml(item.division || "-")}<div class="muted">${escapeHtml(item.charge || "-")}</div></td>
+            <td data-label="구분"><span class="${isSpecialDivision(item.division) ? "special-division" : ""}">${escapeHtml(item.division || "-")}</span><div class="muted">${escapeHtml(item.charge || "-")}</div></td>
             <td data-label="수량">${escapeHtml(item.qty)}</td>
             <td data-label="상태"><span class="badge ${escapeHtml(item.status)}">${escapeHtml(statusLabel(item.status))}</span></td>
             <td data-label="확인일자">${escapeHtml(item.confirmDate || "-")}</td>
-            <td data-label="수거예상">${escapeHtml(item.pickExpDate || "-")}</td>
-            <td data-label="입고">${item.inboundQty == null ? "-" : `${escapeHtml(item.inboundQty)}개`}</td>
+            <td data-label="수거일">${escapeHtml(item.pickupDate || "-")}</td>
+            <td data-label="입고일">${escapeHtml(item.inboundDate || "-")}</td>
+            <td data-label="입고수량">${item.inboundQty == null ? "-" : `${escapeHtml(item.inboundQty)}개`}</td>
           </tr>
-        `).join("") : `<tr><td colspan="9" class="muted empty-history" style="text-align:center;padding:32px">조회된 이력이 없습니다.</td></tr>`;
+        `).join("") : `<tr><td colspan="10" class="muted empty-history" style="text-align:center;padding:32px">조회된 이력이 없습니다.</td></tr>`;
       }
 
       async function refresh() {
